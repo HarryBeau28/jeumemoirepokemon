@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Les GIFS</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #1a1a2e;
+    min-height: 100vh;
+    padding: 20px;
+    color: #fff;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 0 10px #ffcb05;
+  }
+  #header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  #stats { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .sb {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 14px;
+    color: #ccc;
+  }
+  .sb b { color: #ffcb05; font-weight: 600; }
+  #tb {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 14px;
+    color: #ccc;
+  }
+  #tb b { color: #ffcb05; font-weight: 600; }
+  #tb.urg b { color: #e74c3c; }
+  #grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .card { aspect-ratio: 1; cursor: pointer; perspective: 600px; }
+  .ci {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.4s;
+  }
+  .card.fl .ci, .card.mt .ci { transform: rotateY(180deg); }
+  .cf, .cb {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.15);
+  }
+  .cf {
+    background: linear-gradient(135deg, #1a3a6b 0%, #0d1f3c 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cf svg { width: 55%; height: 55%; }
+  .cb {
+    background: #111;
+    transform: rotateY(180deg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cb img { width: 100%; height: 100%; object-fit: contain; display: block; background: #111; }
+  .card.mt .cb {
+    border-color: #2ecc71;
+    box-shadow: 0 0 10px #2ecc71;
+  }
+  .card:hover:not(.mt) .cf { border-color: #ffcb05; }
+  @keyframes shake {
+    0%,100% { transform: translate(0,0) rotate(0deg); }
+    10% { transform: translate(-4px,-3px) rotate(-2deg); }
+    20% { transform: translate(4px, 3px) rotate(2deg); }
+    30% { transform: translate(-4px, 2px) rotate(-1deg); }
+    40% { transform: translate(4px,-2px) rotate(1.5deg); }
+    50% { transform: translate(-3px, 3px) rotate(-2deg); }
+    60% { transform: translate(3px,-3px) rotate(2deg); }
+    70% { transform: translate(-4px, 1px) rotate(-1deg); }
+    80% { transform: translate(4px, 2px) rotate(1deg); }
+    90% { transform: translate(-2px,-2px) rotate(-0.5deg); }
+  }
+  .card.shaking { animation: shake 0.12s linear infinite; }
+
+  #overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    align-items: center; justify-content: center; z-index: 100;
+  }
+  #overlay.show { display: flex; }
+  #modal {
+    background: #16213e;
+    border: 1px solid rgba(255,203,5,0.4);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    max-width: 340px;
+    width: 90%;
+    box-shadow: 0 0 40px rgba(255,203,5,0.15);
+  }
+  #modal h2 { font-size: 26px; margin-bottom: 10px; color: #ffcb05; }
+  #modal p { font-size: 15px; color: #aaa; margin-bottom: 1.5rem; line-height: 1.6; }
+  #modal button {
+    background: #ffcb05;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 32px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #1a1a2e;
+    font-family: inherit;
+    transition: opacity 0.2s;
+  }
+  #modal button:hover { opacity: 0.85; }
+  #start-screen {
+    position: fixed; inset: 0;
+    background: #1a1a2e;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 300; gap: 24px;
+  }
+  #start-screen h2 {
+    font-size: 32px; font-weight: 700; color: #ffcb05;
+    text-shadow: 0 0 20px #ffcb05;
+    text-align: center;
+  }
+  #start-screen p { font-size: 15px; color: #aaa; text-align: center; max-width: 320px; line-height: 1.6; }
+  #btn-start {
+    background: #ffcb05; border: none; border-radius: 12px;
+    padding: 14px 48px; font-size: 18px; font-weight: 700;
+    cursor: pointer; color: #1a1a2e; font-family: inherit;
+    transition: transform 0.1s, opacity 0.2s;
+    box-shadow: 0 0 24px rgba(255,203,5,0.4);
+  }
+  #btn-start:hover { opacity: 0.9; transform: scale(1.04); }
+  #btn-start:active { transform: scale(0.97); }
+</style>
+</head>
+<body>
+
+<div id="start-screen">
+  <h2>⚡ Les GIFS</h2>
+  <p>Retrouve les 12 paires de GIFs Pokémon avant la fin du temps.<br>Attention aux tremblements de terre !</p>
+  <button id="btn-start" onclick="startGame()">▶ Commencer</button>
+</div>
+
+<div id="warning" style="position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#e74c3c;color:#fff;font-weight:700;font-size:15px;padding:10px 28px;border-radius:10px;z-index:200;opacity:0;transition:opacity 0.3s;pointer-events:none;">⚡ Tremblement de terre !</div>
+
+<div id="header">
+  <h1>⚡ Les GIFS</h1>
+  <div id="stats">
+    <div class="sb">Paires : <b id="pc">0/12</b></div>
+    <div class="sb">Tentatives : <b id="mc">0</b></div>
+    <div id="tb">Temps : <b id="tm">3:30</b></div>
+  </div>
+</div>
+
+<div id="grid"></div>
+
+<div id="overlay">
+  <div id="modal">
+    <h2 id="mt"></h2>
+    <p id="mp"></p>
+    <button onclick="restart()">Rejouer</button>
+  </div>
+</div>
+
+<script>
+const IMGS = [
+  "https://res.cloudinary.com/dmtgbjz12/image/upload/v1775645510/eevee_elqa38.gif",
+  "https://res.cloudinary.com/dmtgbjz12/image/upload/v1775644559/squirtle-eating_mp4vlv.gif",
+  "https://res.cloudinary.com/dmtgbjz12/image/upload/v1775643565/salamechecontent_fsphto.gif",
+  "https://res.cloudinary.com/dmtgbjz12/image/upload/v1775646004/pokemon-memes-charmander-tired-gif_htpara.gif",
+  "https://res.cloudinary.com/dmtgbjz12/image/upload/v1775644835/rayquaza-pokemon-rayquaza_w9qh1w.gif",
+  "https://res.cloudinary.com/dmtgbjz12/image/upload/v1775644444/pikahappy_uosyqx.gif",
+  "https://res.cloudinary.com/dmtgbjz12/image/upload/v1775644024/psyko_b5igpc.gif",
+  "https://res.cloudinary.com/dmtgbjz12/image/upload/v1775646110/4a72024f2f6dafc7372e18a02793b698_j2erow.gif",
+  "https://res.cloudinary.com/dmtgbjz12/image/upload/v1775644751/carabande_hfujcm.gif",
+  "https://res.cloudinary.com/dmtgbjz12/image/upload/v1775644313/alaincharmender_xlngyc.gif",
+  "https://res.cloudinary.com/dmtgbjz12/image/upload/v1775643924/togepi_ihrkbk.gif",
+  "https://res.cloudinary.com/dmtgbjz12/image/upload/v1775644158/carasacha_mmdi2c.gif"
+];
+
+const SND_PAIR = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775644907/12_3_gmhxsw.mp3";
+const SND_LOSE = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775644960/pokemon-redblueyellow-run-away-sound-effect_ylhsaj.mp3";
+const SND_WIN  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775645065/pokemon-evolve_gr5iud.mp3";
+const SND_FLIP  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775649456/Card-flip-sound-effect_mmelvl.mp3";
+const SND_WRONG = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775649483/ruby_0020_idyn3g.wav";
+const SND_START = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775646356/Pokemon_A_Button_-_Sound_Effect_HD_xz3res.mp3";
+const SND_QUAKE = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775646184/Earthquake_zvntu1.mp3";
+
+const TOTAL = 210;
+
+function playSound(url) {
+  const a = new Audio(url);
+  a.play().catch(() => {});
+}
+
+const PB = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="46" fill="white"/>
+  <path d="M4 50 A46 46 0 0 1 96 50 Z" fill="#e74c3c"/>
+  <rect x="4" y="46" width="92" height="8" fill="#2c2c2c"/>
+  <circle cx="50" cy="50" r="14" fill="white" stroke="#2c2c2c" stroke-width="4"/>
+  <circle cx="50" cy="50" r="7" fill="white" stroke="#2c2c2c" stroke-width="2"/>
+</svg>`;
+
+let fl = [], matched = 0, mv = 0, ok = true, tl = TOTAL, ti = null;
+
+function fmt(s) { return `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`; }
+function shuffle(a) {
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function buildGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const deck = shuffle([...IMGS.map((_,i)=>i), ...IMGS.map((_,i)=>i)]);
+  deck.forEach(origIdx => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.orig = origIdx;
+    card.innerHTML = `<div class="ci">
+      <div class="cf">${PB}</div>
+      <div class="cb"><img src="${IMGS[origIdx]}" alt="" loading="lazy"/></div>
+    </div>`;
+    card.addEventListener('click', () => flip(card));
+    grid.appendChild(card);
+  });
+}
+
+function flip(card) {
+  if (!ok || card.classList.contains('fl') || card.classList.contains('mt')) return;
+  card.classList.add('fl');
+  playSound(SND_FLIP);
+  fl.push(card);
+  if (fl.length === 2) { mv++; document.getElementById('mc').textContent = mv; check(); }
+}
+
+function check() {
+  ok = false;
+  const [a, b] = fl;
+  if (a.dataset.orig === b.dataset.orig) {
+    a.classList.add('mt'); b.classList.add('mt');
+    matched++;
+    document.getElementById('pc').textContent = matched + '/12';
+    fl = []; ok = true;
+    if (matched === 12) {
+      clearInterval(ti);
+      playSound(SND_WIN);
+      setTimeout(() => endGame(true), 400);
+    } else {
+      playSound(SND_PAIR);
+    }
+  } else {
+    setTimeout(() => { a.classList.remove('fl'); b.classList.remove('fl'); fl = []; ok = true; }, 900);
+    playSound(SND_WRONG);
+  }
+}
+
+function startTimer() {
+  clearInterval(ti);
+  ti = setInterval(() => {
+    tl--;
+    document.getElementById('tm').textContent = fmt(tl);
+    document.getElementById('tb').classList.toggle('urg', tl <= 30);
+    if (tl <= 0) { clearInterval(ti); playSound(SND_LOSE); endGame(false); }
+  }, 1000);
+}
+
+function endGame(won) {
+  document.getElementById('mt').textContent = won ? '🎉 Bravo !' : '⏰ Temps écoulé !';
+  document.getElementById('mp').textContent = won
+    ? `Toutes les paires trouvées en ${mv} tentatives et ${fmt(TOTAL - tl)} !`
+    : `Dommage ! ${matched}/12 paires trouvées en ${mv} tentatives.`;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function restart() {
+  document.getElementById('overlay').classList.remove('show');
+  matched = 0; mv = 0; fl = []; ok = true; tl = TOTAL; gameStarted = false;
+  document.getElementById('pc').textContent = '0/12';
+  document.getElementById('mc').textContent = '0';
+  document.getElementById('tm').textContent = fmt(TOTAL);
+  document.getElementById('tb').classList.remove('urg');
+  document.getElementById('start-screen').style.display = 'flex';
+  document.getElementById('grid').innerHTML = '';
+}
+
+function startShakeTrap() {
+  const delay = 20000 + Math.random() * 15000;
+  setTimeout(() => {
+    if (matched === 12) return;
+    showWarning();
+    setTimeout(() => {
+      triggerShake();
+      scheduleNextShake();
+    }, 1500);
+  }, delay);
+}
+
+function scheduleNextShake() {
+  const delay = 25000 + Math.random() * 20000;
+  setTimeout(() => {
+    if (matched === 12) return;
+    showWarning();
+    setTimeout(() => {
+      triggerShake();
+      scheduleNextShake();
+    }, 1500);
+  }, delay);
+}
+
+function triggerShake() {
+  playSound(SND_QUAKE);
+  const unmatched = [...document.querySelectorAll('.card:not(.mt):not(.fl)')];
+  unmatched.forEach(c => c.classList.add('shaking'));
+  setTimeout(() => unmatched.forEach(c => c.classList.remove('shaking')), 2000);
+}
+
+function showWarning() {
+  const w = document.getElementById('warning');
+  w.style.opacity = '1';
+  setTimeout(() => w.style.opacity = '0', 1200);
+}
+
+let gameStarted = false;
+
+function startGame() {
+  if (gameStarted) return;
+  gameStarted = true;
+  playSound(SND_START);
+  document.getElementById('start-screen').style.display = 'none';
+  buildGrid();
+  startTimer();
+  startShakeTrap();
+}
+</script>
+</body>
+</html>
