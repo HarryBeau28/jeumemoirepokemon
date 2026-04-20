@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Les GIFS</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #1a1a2e;
+    min-height: 100vh;
+    padding: 20px;
+    color: #fff;
+  }
+  h1 { font-size: 20px; font-weight: 700; color: #fff; text-shadow: 0 0 10px #ffcb05; }
+
+  /* START SCREEN */
+  #start-screen {
+    position: fixed; inset: 0; background: #1a1a2e;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 300; gap: 20px;
+  }
+  #start-screen h2 { font-size: 36px; font-weight: 700; color: #ffcb05; text-shadow: 0 0 20px #ffcb05; }
+  #start-screen p { font-size: 15px; color: #aaa; text-align: center; max-width: 340px; line-height: 1.6; }
+  #btn-start {
+    background: #ffcb05; border: none; border-radius: 12px;
+    padding: 14px 48px; font-size: 18px; font-weight: 700;
+    cursor: pointer; color: #1a1a2e; font-family: inherit;
+    transition: transform 0.1s, opacity 0.2s;
+    box-shadow: 0 0 24px rgba(255,203,5,0.4);
+  }
+  #btn-start:hover { opacity: 0.9; transform: scale(1.04); }
+  #btn-start:active { transform: scale(0.97); }
+
+  /* LEVEL TRANSITION SCREEN */
+  #level-screen {
+    position: fixed; inset: 0; background: #1a1a2e;
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 300; gap: 20px;
+  }
+  #level-screen .lvl-num { font-size: 18px; color: #aaa; text-transform: uppercase; letter-spacing: 3px; }
+  #level-screen .lvl-name { font-size: 40px; font-weight: 700; color: #ffcb05; text-shadow: 0 0 20px #ffcb05; }
+  #level-screen .lvl-info { font-size: 14px; color: #888; }
+  #btn-lvl-start {
+    background: #ffcb05; border: none; border-radius: 12px;
+    padding: 12px 40px; font-size: 16px; font-weight: 700;
+    cursor: pointer; color: #1a1a2e; font-family: inherit;
+    transition: transform 0.1s, opacity 0.2s;
+    box-shadow: 0 0 20px rgba(255,203,5,0.3);
+    margin-top: 8px;
+  }
+  #btn-lvl-start:hover { opacity: 0.9; transform: scale(1.04); }
+
+  /* HEADER */
+  #header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; flex-wrap: wrap; gap: 10px;
+  }
+  #stats { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .sb {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px; padding: 5px 12px; font-size: 13px; color: #ccc;
+  }
+  .sb b { color: #ffcb05; font-weight: 600; }
+  #tb {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px; padding: 5px 12px; font-size: 13px; color: #ccc;
+  }
+  #tb b { color: #ffcb05; font-weight: 600; }
+  #tb.urg b { color: #e74c3c; }
+
+  /* LEVEL PROGRESS BAR */
+  #level-bar {
+    display: flex; gap: 6px; margin-bottom: 14px; justify-content: center;
+  }
+  .lvl-dot {
+    width: 32px; height: 6px; border-radius: 3px;
+    background: rgba(255,255,255,0.15); transition: background 0.3s;
+  }
+  .lvl-dot.done { background: #2ecc71; }
+  .lvl-dot.active { background: #ffcb05; }
+
+  /* GRID */
+  #grid {
+    display: grid; gap: 8px;
+    max-width: 720px; margin: 0 auto;
+  }
+  .card { aspect-ratio: 1; cursor: pointer; perspective: 800px; }
+  .ci {
+    width: 100%; height: 100%; position: relative;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    transition: transform 0.45s ease;
+    -webkit-transition: -webkit-transform 0.45s ease;
+  }
+  .card.fl .ci, .card.mt .ci {
+    transform: rotateY(180deg);
+    -webkit-transform: rotateY(180deg);
+  }
+  .cf, .cb {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 10px; overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.15);
+  }
+  .cf {
+    background: linear-gradient(135deg, #1a3a6b 0%, #0d1f3c 100%);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2;
+  }
+  .cf svg { width: 55%; height: 55%; }
+  .cb {
+    background: #111;
+    transform: rotateY(180deg);
+    -webkit-transform: rotateY(180deg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cb img { width: 100%; height: 100%; object-fit: contain; display: block; background: #111; }
+  .card.mt .cb { border-color: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
+  .card:hover:not(.mt) .cf { border-color: #ffcb05; }
+
+  /* MODAL */
+  #overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    align-items: center; justify-content: center; z-index: 100;
+  }
+  #overlay.show { display: flex; }
+  #modal {
+    background: #16213e; border: 1px solid rgba(255,203,5,0.4);
+    border-radius: 16px; padding: 2rem; text-align: center;
+    max-width: 380px; width: 90%;
+    box-shadow: 0 0 40px rgba(255,203,5,0.15);
+  }
+  #modal h2 { font-size: 24px; margin-bottom: 10px; color: #ffcb05; }
+  #modal p { font-size: 14px; color: #aaa; margin-bottom: 1.2rem; line-height: 1.6; }
+  #modal button {
+    background: #ffcb05; border: none; border-radius: 8px;
+    padding: 10px 32px; font-size: 15px; font-weight: 700;
+    cursor: pointer; color: #1a1a2e; font-family: inherit;
+    transition: opacity 0.2s;
+  }
+  #modal button:hover { opacity: 0.85; }
+
+  /* BIRTHDAY */
+  #birthday {
+    display: none; text-align: center;
+    margin-top: 20px; padding: 0 10px;
+  }
+  #birthday .bday-msg {
+    font-size: 28px; font-weight: 700; color: #ffcb05;
+    text-shadow: 0 0 20px #ffcb05, 0 0 40px #ff6b6b;
+    animation: pulse 1s ease-in-out infinite alternate;
+  }
+  #birthday .bday-sub {
+    font-size: 14px; color: #aaa; margin-top: 8px;
+  }
+  @keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.05); }
+  }
+  @keyframes confetti-fall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+  .confetti-piece {
+    position: fixed; width: 10px; height: 10px; top: -20px;
+    animation: confetti-fall linear forwards;
+    pointer-events: none; z-index: 9999; border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+
+<!-- START SCREEN -->
+<div id="start-screen">
+  <h2>⚡ Les GIFS</h2>
+  <p>7 niveaux de mémoire Pokémon t'attendent.<br>Retrouve toutes les paires avant la fin du temps !</p>
+  <button id="btn-start" onclick="startGame()">▶ Commencer</button>
+</div>
+
+<!-- LEVEL TRANSITION SCREEN -->
+<div id="level-screen">
+  <div class="lvl-num" id="ls-num"></div>
+  <div class="lvl-name" id="ls-name"></div>
+  <div class="lvl-info" id="ls-info"></div>
+  <button id="btn-lvl-start" onclick="launchLevel()">▶ Jouer</button>
+</div>
+
+<!-- GAME UI -->
+<div id="header">
+  <h1 id="game-title">⚡ Les GIFS</h1>
+  <div id="stats">
+    <div class="sb">Paires : <b id="pc">0/6</b></div>
+    <div class="sb">Tentatives : <b id="mc">0</b></div>
+    <div id="tb">Temps : <b id="tm">0:40</b></div>
+  </div>
+</div>
+
+<div id="level-bar"></div>
+<div id="grid"></div>
+<div id="birthday">
+  <div class="bday-msg">🎂 BON ANNIVERSAIRE UMMAAAAAA ! 🎂</div>
+  <div class="bday-sub" id="bday-time"></div>
+</div>
+
+<!-- OVERLAY MODAL -->
+<div id="overlay">
+  <div id="modal">
+    <h2 id="mt"></h2>
+    <p id="mp"></p>
+    <button id="modal-btn" onclick="modalAction()"></button>
+  </div>
+</div>
+
+<script>
+const LEVELS = [
+  {
+    num: 1, name: "Divers", pairs: 6, time: 50,
+    cols: 4,
+    imgs: [
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720672/bulbasaur_hytes9.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720671/eevee-freaky_xvz2tl.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720670/eevee-eevee-wow_rblhmw.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720670/happy-jigglypuff_fghhfc.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720669/pokemon-pikachu_zbk6qu.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720669/excellangue_swhuna.gif"
+    ]
+  },
+  {
+    num: 2, name: "Salamèche", pairs: 6, time: 50,
+    cols: 4,
+    imgs: [
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720843/charmander-fire-breath_eq0nvt.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720841/cutie_agqvez.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720839/itzi-itzali_ozvqmy.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720838/charmander-pokemon2_xu7bgs.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720836/alain-charmander_nn1yf5.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1775646004/pokemon-memes-charmander-tired-gif_htpara.gif"
+    ]
+  },
+  {
+    num: 3, name: "Togepi", pairs: 6, time: 50,
+    cols: 4,
+    imgs: [
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720833/togepi-cries_lull4n.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720831/pokemon-pok%C3%A9mon_cwpjgu.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720830/cute-pokemon_qfdgxy.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720828/togepi-chocolate_ysgtzp.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720827/togepi-happy_vfkdzg.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720825/togepi-pokemon_lt5xdy.gif"
+    ]
+  },
+  {
+    num: 4, name: "Pikachu", pairs: 6, time: 50,
+    cols: 4,
+    imgs: [
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720814/pikachu-yeah_wofeby.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720813/pikachu-psyduck_rse2ex.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720812/dragonite-pikachu_rt1gdk.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720810/pikachu-pokemon_qjk8vi.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720809/pokemon-cute_eob0tk.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720807/hi-pikachu_jkkntu.gif"
+    ]
+  },
+  {
+    num: 5, name: "Rayquaza", pairs: 6, time: 50,
+    cols: 4,
+    imgs: [
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720797/pokemon-deoxys-vs-rayquaza-rayquaza_jhvtpp.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720795/pokemon-pokemon-horizons_gay54r.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720793/rayquaza-pokemon-rayquaza_ezzxy1.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720793/rayquaza-pokemon2rayquaza_gnd4hq.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720781/rayquaza-pokemo3n-rayquaza_zw6jaw.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720780/hyper-beam-pok%C3%A9mon-hyper-beam_qm3brj.gif"
+    ]
+  },
+  {
+    num: 6, name: "Mew", pairs: 6, time: 50,
+    cols: 4,
+    imgs: [
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720768/pokemon-mew1_s907hl.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720767/pokemon-mew4_jka8dl.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1775646110/4a72024f2f6dafc7372e18a02793b698_j2erow.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720765/pokemon-mew2_az9niw.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720738/pokemon-fly_soutwp.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720738/mewtwo-kid_mc32er.gif"
+    ]
+  },
+  {
+    num: 7, name: "Carapuce", pairs: 10, time: 112,
+    cols: 5, birthday: true,
+    imgs: [
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720725/pokemon-squirtle1_lq9vpr.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720724/squirtle-pokemon-squirtle_bvdq3a.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720722/squirtle-pokemon_qcb48i.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720722/squirtle-flowers_rufaup.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720720/squirtle-ash_xorib1.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720719/pokemon-squirtle-squad_uqmp11.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720718/pokemon-squirtle4_gduxs9.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720717/pokemon-squirtle_aftapp.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720716/pokemon-ash_ixw31l.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720715/squirtle-sunglasses_uyxept.gif"
+    ]
+  }
+];
+
+const SND_PAIR  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775644907/12_3_gmhxsw.mp3";
+const SND_LOSE  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775644960/pokemon-redblueyellow-run-away-sound-effect_ylhsaj.mp3";
+const SND_WIN   = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775645065/pokemon-evolve_gr5iud.mp3";
+const SND_START = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775646356/Pokemon_A_Button_-_Sound_Effect_HD_xz3res.mp3";
+const SND_FLIP  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775649456/Card-flip-sound-effect_mmelvl.mp3";
+const SND_WRONG = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775649483/ruby_0020_idyn3g.wav";
+const SND_LVL2  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1776724312/SALAMECHE_jsiuhw.mp3";
+const SND_LVL7  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1776724314/carapuce_bilkhv.mp3";
+const SND_BDAY  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1776723945/bon-anniversaire-les-ptits-indiens_hrhcpk.mp3";
+
+const PB = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="46" fill="white"/>
+  <path d="M4 50 A46 46 0 0 1 96 50 Z" fill="#e74c3c"/>
+  <rect x="4" y="46" width="92" height="8" fill="#2c2c2c"/>
+  <circle cx="50" cy="50" r="14" fill="white" stroke="#2c2c2c" stroke-width="4"/>
+  <circle cx="50" cy="50" r="7" fill="white" stroke="#2c2c2c" stroke-width="2"/>
+</svg>`;
+
+let currentLevel = 0;
+let fl = [], matched = 0, mv = 0, ok = true, tl = 0, ti = null;
+let totalTime = 0;
+
+function fmt(s) { return `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`; }
+function shuffle(a) {
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function playSound(url) { const a = new Audio(url); a.play().catch(()=>{}); }
+
+function buildLevelBar() {
+  const bar = document.getElementById('level-bar');
+  bar.innerHTML = '';
+  LEVELS.forEach((l, i) => {
+    const d = document.createElement('div');
+    d.className = 'lvl-dot' + (i < currentLevel ? ' done' : i === currentLevel ? ' active' : '');
+    bar.appendChild(d);
+  });
+}
+
+function startGame() {
+  playSound(SND_START);
+  document.getElementById('start-screen').style.display = 'none';
+  showLevelScreen(0);
+}
+
+function showLevelScreen(idx) {
+  currentLevel = idx;
+  const lvl = LEVELS[idx];
+  document.getElementById('ls-num').textContent = `Niveau ${lvl.num} / 7`;
+  document.getElementById('ls-name').textContent = lvl.name;
+  document.getElementById('ls-info').textContent = `${lvl.pairs} paires — ${lvl.time} secondes`;
+  document.getElementById('level-screen').style.display = 'flex';
+  buildLevelBar();
+  if (lvl.num === 2) playSound(SND_LVL2);
+  else if (lvl.num === 7) playSound(SND_LVL7);
+}
+
+function launchLevel() {
+  playSound(SND_START);
+  const lvl = LEVELS[currentLevel];
+  document.getElementById('level-screen').style.display = 'none';
+  document.getElementById('birthday').style.display = 'none';
+  document.getElementById('game-title').textContent = `⚡ Niveau ${lvl.num} — ${lvl.name}`;
+  document.getElementById('pc').textContent = `0/${lvl.pairs}`;
+  document.getElementById('mc').textContent = '0';
+  document.getElementById('tb').classList.remove('urg');
+  buildLevelBar();
+  fl = []; matched = 0; mv = 0; ok = true;
+  tl = lvl.time;
+  document.getElementById('tm').textContent = fmt(tl);
+  buildGrid(lvl);
+  startTimer();
+}
+
+function buildGrid(lvl) {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  if (lvl.birthday) {
+    buildBirthdayGrid(lvl);
+    return;
+  }
+
+  const maxW = '580px';
+  grid.style.gridTemplateColumns = `repeat(${lvl.cols}, minmax(100px, 1fr))`;
+  grid.style.maxWidth = maxW;
+  grid.style.position = '';
+  grid.style.height = '';
+
+  const deck = shuffle([...lvl.imgs.map((_,i)=>i), ...lvl.imgs.map((_,i)=>i)]);
+  deck.forEach(origIdx => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.orig = origIdx;
+    card.innerHTML = `<div class="ci">
+      <div class="cf">${PB}</div>
+      <div class="cb"><img src="${lvl.imgs[origIdx]}" alt="" loading="lazy"/></div>
+    </div>`;
+    card.addEventListener('click', () => flip(card));
+    grid.appendChild(card);
+  });
+}
+
+function buildBirthdayGrid(lvl) {
+  const grid = document.getElementById('grid');
+  // S = card size, G = gap
+  const S = 100, G = 8, U = S + G;
+
+  // "2" : positions [col, row] (0-indexed)
+  // "5" : offset col +3
+  // "!" : offset col +6
+  const TWO = [
+    [0,0],[1,0],
+    [1,1],
+    [0,2],[1,2],
+    [0,3],
+    [0,4],[1,4]
+  ];
+  const FIVE = [
+    [0,0],[1,0],
+    [0,1],
+    [0,2],[1,2],
+    [1,3],
+    [0,4],[1,4]
+  ];
+  const EXCL = [
+    [0,0],
+    [0,1],
+    [0,2],
+    [0,3],
+    // gap
+    [0,5]
+  ];
+
+  // Build positions list in order: 2 (8 cards), 5 (8 cards), ! (5... but we need 20 total = 10 pairs × 2)
+  // 2=8, 5=8, !=4 → 20 total ✓ (adjust ! to 4 cards)
+  const EXCL4 = [[0,0],[0,1],[0,2],[0,4]];
+
+  const colOffset2 = 0;
+  const colOffset5 = 3;
+  const colOffset8 = 6;
+
+  const positions = [
+    ...TWO.map(([c,r]) => [c + colOffset2, r]),
+    ...FIVE.map(([c,r]) => [c + colOffset5, r]),
+    ...EXCL4.map(([c,r]) => [c + colOffset8, r])
+  ]; // 8+8+4 = 20 positions
+
+  const totalW = (colOffset8 + 1) * U - G;
+  const totalH = 6 * U - G;
+
+  grid.style.position = 'relative';
+  grid.style.height = totalH + 'px';
+  grid.style.maxWidth = totalW + 'px';
+  grid.style.gridTemplateColumns = '';
+  grid.style.display = 'block';
+
+  const deck = shuffle([...lvl.imgs.map((_,i)=>i), ...lvl.imgs.map((_,i)=>i)]);
+
+  positions.forEach(([col, row], idx) => {
+    const origIdx = deck[idx];
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.orig = origIdx;
+    card.style.position = 'absolute';
+    card.style.left = (col * U) + 'px';
+    card.style.top  = (row * U) + 'px';
+    card.style.width  = S + 'px';
+    card.style.height = S + 'px';
+    card.innerHTML = `<div class="ci">
+      <div class="cf">${PB}</div>
+      <div class="cb"><img src="${lvl.imgs[origIdx]}" alt="" loading="lazy"/></div>
+    </div>`;
+    card.addEventListener('click', () => flip(card));
+    grid.appendChild(card);
+  });
+}
+
+function flip(card) {
+  if (!ok || card.classList.contains('fl') || card.classList.contains('mt')) return;
+  card.classList.add('fl');
+  playSound(SND_FLIP);
+  fl.push(card);
+  if (fl.length === 2) { mv++; document.getElementById('mc').textContent = mv; check(); }
+}
+
+function check() {
+  ok = false;
+  const [a, b] = fl;
+  const lvl = LEVELS[currentLevel];
+  if (a.dataset.orig === b.dataset.orig) {
+    a.classList.add('mt'); b.classList.add('mt');
+    matched++;
+    document.getElementById('pc').textContent = `${matched}/${lvl.pairs}`;
+    fl = []; ok = true;
+    if (matched === lvl.pairs) {
+      clearInterval(ti);
+      const timeUsed = lvl.time - tl;
+      totalTime += timeUsed;
+      playSound(SND_WIN);
+      setTimeout(() => levelWon(), 400);
+    } else {
+      playSound(SND_PAIR);
+    }
+  } else {
+    playSound(SND_WRONG);
+    setTimeout(() => { a.classList.remove('fl'); b.classList.remove('fl'); fl = []; ok = true; }, 900);
+  }
+}
+
+function startTimer() {
+  clearInterval(ti);
+  ti = setInterval(() => {
+    tl--;
+    document.getElementById('tm').textContent = fmt(tl);
+    document.getElementById('tb').classList.toggle('urg', tl <= 10);
+    if (tl <= 0) {
+      clearInterval(ti);
+      playSound(SND_LOSE);
+      levelLost();
+    }
+  }, 1000);
+}
+
+function levelWon() {
+  const lvl = LEVELS[currentLevel];
+  const isLast = currentLevel === LEVELS.length - 1;
+  if (isLast) {
+    showModal('🎉 Félicitations !',
+      `Niveau terminé en ${fmt(lvl.time - tl)} !<br><br>Temps total : <b style="color:#ffcb05">${fmt(totalTime)}</b>`,
+      'Terminer', () => showBirthday());
+  } else {
+    showModal('✅ Niveau réussi !',
+      `Niveau ${lvl.num} terminé en ${fmt(lvl.time - tl)} !`,
+      'Niveau suivant ▶', () => showLevelScreen(currentLevel + 1));
+  }
+}
+
+function levelLost() {
+  const lvl = LEVELS[currentLevel];
+  showModal('⏰ Temps écoulé !',
+    `${matched}/${lvl.pairs} paires trouvées.<br>Recommence ce niveau !`,
+    'Réessayer', () => launchLevel());
+}
+
+function showModal(title, text, btnTxt, action) {
+  document.getElementById('mt').textContent = title;
+  document.getElementById('mp').innerHTML = text;
+  document.getElementById('modal-btn').textContent = btnTxt;
+  window._modalAction = action;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function modalAction() {
+  document.getElementById('overlay').classList.remove('show');
+  if (window._modalAction) window._modalAction();
+}
+
+function showBirthday() {
+  document.getElementById('grid').innerHTML = '';
+  document.getElementById('birthday').style.display = 'block';
+  document.getElementById('bday-time').textContent = `Temps total : ${fmt(totalTime)}`;
+  playSound(SND_BDAY);
+  launchConfetti();
+}
+
+function launchConfetti() {
+  const colors = ['#ffcb05','#e74c3c','#2ecc71','#3498db','#9b59b6','#ff69b4','#fff'];
+  for (let i = 0; i < 80; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti-piece';
+      c.style.left = Math.random() * 100 + 'vw';
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.animationDuration = (2 + Math.random() * 3) + 's';
+      c.style.animationDelay = (Math.random() * 2) + 's';
+      c.style.width = (8 + Math.random() * 8) + 'px';
+      c.style.height = (8 + Math.random() * 8) + 'px';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 6000);
+    }, i * 40);
+  }
+}
+
+</script>
+</body>
+</html>
