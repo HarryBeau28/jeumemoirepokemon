@@ -151,22 +151,24 @@
   /* BIRTHDAY */
   #birthday {
     display: none; text-align: center;
-    margin-top: 20px; padding: 0 10px;
+    margin-top: 24px; padding: 0 10px;
   }
   #birthday .bday-msg {
-    font-size: clamp(18px, 5vw, 28px); font-weight: 700; color: #ffcb05;
+    font-size: clamp(26px, 7vw, 42px); font-weight: 700; color: #ffcb05;
     text-shadow: 0 0 20px #ffcb05, 0 0 40px #ff6b6b;
     animation: pulse 1s ease-in-out infinite alternate;
-    line-height: 1.4;
+    line-height: 1.3; margin-bottom: 24px;
   }
-  #birthday .bday-sub { font-size: clamp(12px, 3vw, 14px); color: #aaa; margin-top: 8px; }
-
-  /* BIRTHDAY GRID WRAPPER - scrollable on mobile */
-  #birthday-grid-wrapper {
-    overflow-x: auto; overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 8px;
+  #birthday .bday-gifs {
+    display: flex; justify-content: center; align-items: center;
+    gap: clamp(10px, 3vw, 24px); flex-wrap: wrap; margin-bottom: 16px;
   }
+  #birthday .bday-gifs img {
+    width: clamp(80px, 22vw, 140px); height: clamp(80px, 22vw, 140px);
+    object-fit: contain; border-radius: 12px;
+    border: 2px solid rgba(255,203,5,0.3);
+  }
+  #birthday .bday-sub { font-size: clamp(12px, 3vw, 15px); color: #aaa; margin-top: 8px; }
 
   @keyframes pulse {
     from { transform: scale(1); }
@@ -187,9 +189,10 @@
 
 <!-- START SCREEN -->
 <div id="start-screen">
-  <h2>⚡ Les GIFS</h2>
+  <h2>⚡ Jeu de mémoire Pokémon</h2>
   <p>7 niveaux de mémoire Pokémon t'attendent.<br>Retrouve toutes les paires avant la fin du temps !</p>
   <button id="btn-start" onclick="startGame()">▶ Commencer</button>
+  <img src="https://res.cloudinary.com/dmtgbjz12/image/upload/v1777202342/sachastarters_jx93zo.png" alt="Sacha et ses starters" style="width: clamp(180px, 60vw, 320px); margin-top: 8px; object-fit: contain;"/>
 </div>
 
 <!-- LEVEL TRANSITION SCREEN -->
@@ -214,8 +217,19 @@
 <div id="grid-wrap" style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
   <div id="grid"></div>
 </div>
+
+<div id="result-panel" style="display:none; margin: 16px auto; max-width: 560px; background: #16213e; border: 1px solid rgba(255,203,5,0.4); border-radius: 16px; padding: 1.2rem; text-align: center; box-shadow: 0 0 30px rgba(255,203,5,0.1);">
+  <h2 id="rp-title" style="font-size: clamp(18px,5vw,22px); color: #ffcb05; margin-bottom: 8px;"></h2>
+  <p id="rp-text" style="font-size: clamp(13px,3.5vw,14px); color: #aaa; margin-bottom: 14px; line-height: 1.6;"></p>
+  <button id="rp-btn" onclick="modalAction()" style="background:#ffcb05; border:none; border-radius:8px; padding:12px 0; font-size:clamp(14px,4vw,15px); font-weight:700; cursor:pointer; color:#1a1a2e; font-family:inherit; touch-action:manipulation; width:100%;"></button>
+</div>
 <div id="birthday">
   <div class="bday-msg">🎂 BON ANNIVERSAIRE UMMAAAAAA ! 🎂</div>
+  <div class="bday-gifs">
+    <img src="https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720839/itzi-itzali_ozvqmy.gif" alt=""/>
+    <img src="https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720725/pokemon-squirtle1_lq9vpr.gif" alt=""/>
+    <img src="https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720809/pokemon-cute_eob0tk.gif" alt=""/>
+  </div>
   <div class="bday-sub" id="bday-time"></div>
 </div>
 
@@ -231,10 +245,10 @@
 <script>
 const LEVELS = [
   {
-    num: 1, name: "Divers", pairs: 6, time: 50,
+    num: 1, name: "Divers", pairs: 6, time: 57,
     cols: 4,
     imgs: [
-      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720672/bulbasaur_hytes9.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1777199087/squirtlebulbasaur_hzotae.gif",
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720671/eevee-freaky_xvz2tl.gif",
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720670/eevee-eevee-wow_rblhmw.gif",
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720670/happy-jigglypuff_fghhfc.gif",
@@ -243,7 +257,7 @@ const LEVELS = [
     ]
   },
   {
-    num: 2, name: "Salamèche", pairs: 6, time: 50,
+    num: 2, name: "Salamèche", pairs: 6, time: 57,
     cols: 4,
     imgs: [
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720843/charmander-fire-breath_eq0nvt.gif",
@@ -255,10 +269,10 @@ const LEVELS = [
     ]
   },
   {
-    num: 3, name: "Togepi", pairs: 6, time: 50,
+    num: 3, name: "Togepi", pairs: 6, time: 57,
     cols: 4,
     imgs: [
-      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720833/togepi-cries_lull4n.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1777199127/pokemon-anipoke_zrblql.gif",
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720831/pokemon-pok%C3%A9mon_cwpjgu.gif",
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720830/cute-pokemon_qfdgxy.gif",
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720828/togepi-chocolate_ysgtzp.gif",
@@ -267,7 +281,7 @@ const LEVELS = [
     ]
   },
   {
-    num: 4, name: "Pikachu", pairs: 6, time: 50,
+    num: 4, name: "Pikachu", pairs: 6, time: 57,
     cols: 4,
     imgs: [
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720814/pikachu-yeah_wofeby.gif",
@@ -279,7 +293,7 @@ const LEVELS = [
     ]
   },
   {
-    num: 5, name: "Rayquaza", pairs: 6, time: 50,
+    num: 5, name: "Rayquaza", pairs: 6, time: 57,
     cols: 4,
     imgs: [
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720797/pokemon-deoxys-vs-rayquaza-rayquaza_jhvtpp.gif",
@@ -291,7 +305,7 @@ const LEVELS = [
     ]
   },
   {
-    num: 6, name: "Mew", pairs: 6, time: 50,
+    num: 6, name: "Mew", pairs: 6, time: 57,
     cols: 4,
     imgs: [
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720768/pokemon-mew1_s907hl.gif",
@@ -303,7 +317,7 @@ const LEVELS = [
     ]
   },
   {
-    num: 7, name: "Carapuce", pairs: 10, time: 112,
+    num: 7, name: "Carapuce", pairs: 10, time: 119,
     cols: 5, birthday: true,
     imgs: [
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720725/pokemon-squirtle1_lq9vpr.gif",
@@ -312,7 +326,7 @@ const LEVELS = [
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720722/squirtle-flowers_rufaup.gif",
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720720/squirtle-ash_xorib1.gif",
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720719/pokemon-squirtle-squad_uqmp11.gif",
-      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720718/pokemon-squirtle4_gduxs9.gif",
+      "https://res.cloudinary.com/dmtgbjz12/image/upload/v1777199109/squirtle-pokemon-squirtle2_lvg1df.gif",
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720717/pokemon-squirtle_aftapp.gif",
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720716/pokemon-ash_ixw31l.gif",
       "https://res.cloudinary.com/dmtgbjz12/image/upload/v1776720715/squirtle-sunglasses_uyxept.gif"
@@ -327,6 +341,10 @@ const SND_START = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775646356
 const SND_FLIP  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775649456/Card-flip-sound-effect_mmelvl.mp3";
 const SND_WRONG = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1775649483/ruby_0020_idyn3g.wav";
 const SND_LVL2  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1776724312/SALAMECHE_jsiuhw.mp3";
+const SND_LVL3  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1777200510/Togepi_vdaie4.mp3";
+const SND_LVL4  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1777201851/pickachu_dd855q.mp3";
+const SND_LVL5  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1777200509/rayquaza-cry_dfdokv.mp3";
+const SND_LVL6  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1777200509/mew_nxhlu5.mp3";
 const SND_LVL7  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1776724314/carapuce_bilkhv.mp3";
 const SND_BDAY  = "https://res.cloudinary.com/dmtgbjz12/video/upload/v1776723945/bon-anniversaire-les-ptits-indiens_hrhcpk.mp3";
 
@@ -377,12 +395,17 @@ function showLevelScreen(idx) {
   document.getElementById('level-screen').style.display = 'flex';
   buildLevelBar();
   if (lvl.num === 2) playSound(SND_LVL2);
+  else if (lvl.num === 3) playSound(SND_LVL3);
+  else if (lvl.num === 4) playSound(SND_LVL4);
+  else if (lvl.num === 5) playSound(SND_LVL5);
+  else if (lvl.num === 6) playSound(SND_LVL6);
   else if (lvl.num === 7) playSound(SND_LVL7);
 }
 
 function launchLevel() {
   playSound(SND_START);
   const lvl = LEVELS[currentLevel];
+  document.getElementById('result-panel').style.display = 'none';
   document.getElementById('level-screen').style.display = 'none';
   document.getElementById('birthday').style.display = 'none';
   document.getElementById('game-title').textContent = `⚡ Niveau ${lvl.num} — ${lvl.name}`;
@@ -431,7 +454,7 @@ function buildBirthdayGrid(lvl) {
 
   // Taille dynamique selon largeur écran
   const screenW = Math.min(window.innerWidth, 600);
-  const S = Math.max(52, Math.floor((screenW - 24) / 7) - 6);
+  const S = Math.max(60, Math.floor((screenW - 24) / 7) - 6 + 8);
   const G = Math.max(4, Math.floor(S * 0.07));
   const U = S + G;
 
@@ -549,7 +572,7 @@ function levelWon() {
   if (isLast) {
     showModal('🎉 Félicitations !',
       `Niveau terminé en ${fmt(lvl.time - tl)} !<br><br>Temps total : <b style="color:#ffcb05">${fmt(totalTime)}</b>`,
-      'Terminer', () => showBirthday());
+      'Continuer', () => showBirthday());
   } else {
     showModal('✅ Niveau réussi !',
       `Niveau ${lvl.num} terminé en ${fmt(lvl.time - tl)} !`,
@@ -565,15 +588,16 @@ function levelLost() {
 }
 
 function showModal(title, text, btnTxt, action) {
-  document.getElementById('mt').textContent = title;
-  document.getElementById('mp').innerHTML = text;
-  document.getElementById('modal-btn').textContent = btnTxt;
+  document.getElementById('rp-title').textContent = title;
+  document.getElementById('rp-text').innerHTML = text;
+  document.getElementById('rp-btn').textContent = btnTxt;
   window._modalAction = action;
-  document.getElementById('overlay').classList.add('show');
+  document.getElementById('result-panel').style.display = 'block';
+  document.getElementById('result-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function modalAction() {
-  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('result-panel').style.display = 'none';
   if (window._modalAction) window._modalAction();
 }
 
